@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="description" content="vuejs, django, crudapp, restapi">
+  <meta name=”keywords” content=”vuejs, django, crudapp, restapi”>
+  <title>Vue-js | Django | Crud App</title>
+  <!-- bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <!-- Bootstrap css -->
+</head>
+
+<body>
+  <!-- Main Body -->
+
+  <body>
+    <div id="starting">
+      <div class="container">
+        <div class="row">
+          <h1>List of Articles
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addArticleModal">ADD ARTICLE</button>
+          </h1>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Heading</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="article in articles">
+                <th scope="row">${article.article_id}</th>
+                <td>${article.article_heading}</td>
+                <td>
+                  <button class="btn btn-info" v-on:click="getArticle(article.article_id)">Edit</button>
+                  <button class="btn btn-danger" v-on:click="deleteArticle(article.article_id)">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="loading" v-if="loading===true">Loading&#8230;</div>
+    </div>
+    <!-- Main Body Ends -->
+
+    <!-- Bootstrap js files -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous">
+    </script>
+    <script src=”https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity=”sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q” crossorigin=”anonymous”>
+    </script>
+    <script src=”https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      integrity=”sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl” crossorigin=”anonymous”>
+    </script>
+
+    <!-- Vue JS files -->
+    <script src=”https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"> </script> <script
+      src=”https://cdn.jsdelivr.net/npm/vue-resource@1.3.5"> </script> <script type='text/javascript'>
+      new Vue({
+        el: '#starting',
+        delimiters: ['${', '}'],
+        data: {
+          articles: [],
+          loading: false,
+          currentArticle: {},
+          message: null,
+          newArticle: {
+            'article_heading': null,
+            'article_body': null
+          },
+        },
+        mounted: function () {
+          this.getArticles();
+        },
+        methods: {
+          getArticles: function () {
+            this.loading = true;
+            this.$http.get('/api/article')
+              .then((response) => {
+                this.articles = response.data;
+                this.loading = false;
+              }).catch((err) => {
+                this.loading = false;
+                console.log(err);
+              });
+          }
+        },
+        getArticle: function (id) {
+          this.loading = true;
+          this.$http.get(`/api/article/${id}/`)
+            .then((response) => {
+              this.currentArticle = response.data;
+              this.loading = false;
+            }).catch((err) => {
+              this.loading = false;
+              console.log(err);
+            });
+        },
+        addArticle: function () {
+          this.loading = true;
+          this.$http.post('/api/article', this.newArticle)
+            .then((response) => {
+              this.loading = false;
+              this.getArticles();
+            }).catch((err) => {
+              this.loading = false;
+              console.log(err);
+            });
+        },
+        updateArticle: function () {
+          this.loading = true;
+
+          this.$http.put(`/api/article/${this.currentArticle.article_id}`,
+              this.currentArticle)
+            .then((response) => {
+              this.loading = false;
+              this.currentArticle = response.data;
+              this.getArticles();
+            }).catch((err) => {
+              this.loading = false;
+              console.log(err);
+            });
+        },
+        deleteArticle: function (id) {
+          this.loading = true;
+          this.$http.delete(`/api/article/${id}/`)
+            .then((response) => {
+              this.loading = false;
+              this.getArticles();
+            }).catch((err) => {
+              this.loading = false;
+              console.log(err);
+            });
+        }
+      });
+    </script>
+  </body>
+
+</html>
